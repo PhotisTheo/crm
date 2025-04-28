@@ -1,0 +1,49 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Open House Events{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Open House Events</h2>
+  <a href="{% url 'create_open_house' %}" class="btn btn-success">+ Create New Event</a>
+</div>
+
+{% if events %}
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Date</th>
+          <th>Address</th>
+          <th>Agent</th>
+          <th>Sign-In Link</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+        <tr>
+          <td>
+            <a href="{% url 'open_house_detail' event.pk %}" class="text-decoration-none fw-bold">
+              {{ event.title }}
+            </a>
+          </td>
+          <td>{{ event.date|date:"M d, Y h:i A" }}</td>
+          <td>{{ event.address }}</td>
+          <td>{{ event.agent }}</td>
+          <td>
+            <a href="{% url 'open_house_sign_in' event.id %}" target="_blank" class="btn btn-sm btn-outline-primary">
+              Open Sign-In Form
+            </a>
+            <a href="{% url 'delete_open_house' event.id %}" class="btn btn-sm btn-outline-danger"
+              onclick="return confirm('Are you sure you want to delete this event?')">Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>No open house events created yet.</p>
+{% endif %}
+{% endblock %}

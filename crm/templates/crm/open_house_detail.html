@@ -1,0 +1,33 @@
+{% extends "crm/base.html" %}
+{% load static %}
+
+{% block title %}Open House Details{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="mb-4">{{ open_house.title }}</h2>
+  <p><strong>Address:</strong> {{ open_house.address }}</p>
+  <p><strong>Date:</strong> {{ open_house.date|date:"F d, Y @ h:i A" }}</p>
+  {% if open_house.agent %}
+  <p><strong>Agent:</strong> {{ open_house.agent.get_full_name|default:open_house.agent.username }}</p>
+  {% endif %}
+
+  <hr class="my-4">
+
+  <div class="text-center">
+    {% if open_house.qr_code %}
+      <img src="{{ open_house.qr_code.url }}" alt="Open House QR Code" class="img-fluid mb-3" style="max-width: 300px;">
+
+      <div>
+        <a href="{{ open_house.qr_code.url }}" download class="btn btn-success me-2">
+          📥 Download QR Code
+        </a>
+      </div>
+    {% else %}
+      <p class="text-danger">No QR Code generated for this Open House.</p>
+    {% endif %}
+  </div>
+
+  <a href="{% url 'open_house_list' %}" class="btn btn-secondary mt-4">← Back to Open Houses</a>
+</div>
+{% endblock %}

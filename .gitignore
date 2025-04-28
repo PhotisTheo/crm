@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyc
+
+# Django
+db.sqlite3
+*.log
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.VENV/
+
+# Environment Variables
+.env
+
+# VSCode
+.vscode/
+
+# Mac system files
+.DS_Store
+
+# Static & Media (locally generated)
+staticfiles/
+media/
+media_root/
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# mypy
+.mypy_cache/
+
+# Pytest
+.pytest_cache/
+
+# Node stuff (if you use npm for frontend)
+node_modules/
+
+# AWS credentials (just in case)
+*.pem

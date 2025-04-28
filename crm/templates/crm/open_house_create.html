@@ -1,0 +1,25 @@
+{% extends "crm/base.html" %}
+
+{% block title %}Create Open House{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Create Open House Event</h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <div class="text-danger small">{{ field.errors|striptags }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary">Create Event</button>
+    <a href="{% url 'open_house_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}
