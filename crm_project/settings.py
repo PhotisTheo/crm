@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "crm-production-0b7b.up.railway.app"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "https://crm-production-0b7b.up.railway.app"]
 
 # Installed apps
 INSTALLED_APPS = [
@@ -100,3 +100,8 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# CSRF Settings for production
+CSRF_TRUSTED_ORIGINS = [
+    "https://crm-production-0b7b.up.railway.app",
+]
