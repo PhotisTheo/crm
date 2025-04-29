@@ -56,7 +56,7 @@ class PropertyVisit(models.Model):
 
     lead = models.ForeignKey("Lead", on_delete=models.CASCADE, related_name="visits")
     address = models.CharField(max_length=255)
-    visit_date = models.DateField()
+    visit_date = models.DateTimeField()
     notes = models.TextField(blank=True)
     image = models.ImageField(
         storage=S3Boto3Storage(), upload_to="visit_images/", blank=True, null=True

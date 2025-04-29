@@ -33,25 +33,25 @@ class LeadForm(forms.ModelForm):
                 field.widget.attrs.update({"class": "form-control"})
 
 
+from django import forms
+
+from .models import PropertyVisit
+
+
 class PropertyVisitForm(forms.ModelForm):
     class Meta:
         model = PropertyVisit
-        fields = ["address", "visit_date", "notes", "image"]
+        fields = ["address", "visit_date", "notes", "image", "status"]
         widgets = {
-            "visit_date": forms.DateInput(
-                attrs={"type": "date", "class": "form-control"}
+            "visit_date": forms.DateTimeInput(
+                attrs={"type": "datetime-local", "class": "form-control"}
             ),
-            "notes": forms.Textarea(attrs={"rows": 2, "class": "form-control"}),
-            "address": forms.TextInput(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            if field_name == "image":
-                field.widget.attrs.update({"class": "form-control-file"})
-            else:
-                field.widget.attrs.update({"class": "form-control"})
+        for field in self.fields.values():
+            field.widget.attrs.update({"class": "form-control"})
 
 
 class OpenHouseSignInForm(forms.ModelForm):

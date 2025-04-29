@@ -181,6 +181,8 @@
     const calendarEl = document.getElementById('calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
+      timeZone: 'local',  // ✅ Force FullCalendar to use browser's local time
+      events: {{ events|safe }},
       height: 'auto',
       headerToolbar: {
         left: 'prev,next today',
