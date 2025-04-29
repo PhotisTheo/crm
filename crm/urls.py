@@ -54,4 +54,9 @@ urlpatterns = [
     ),
     path("open-house/<int:pk>/", views.open_house_detail, name="open_house_detail"),
     path("calendar.ics", views.calendar_feed, name="calendar_feed"),
+    path(
+        "delete-calendar-event/<str:event_type>/<int:event_id>/",
+        views.delete_calendar_event,
+        name="delete_calendar_event",
+    ),
 ]

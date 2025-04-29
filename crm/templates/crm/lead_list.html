@@ -167,45 +167,58 @@
 {% endblock %}
 
 {% block extra_scripts %}
-<!-- FullCalendar Scripts -->
+<!-- FullCalendar & Tippy -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-
-<!-- Tippy.js for hover tooltips -->
 <link href="https://unpkg.com/tippy.js@6/dist/tippy.css" rel="stylesheet" />
 <script src="https://unpkg.com/@popperjs/core@2"></script>
 <script src="https://unpkg.com/tippy.js@6"></script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
+  document.addEventListener("DOMContentLoaded", function () {
+    const calendarEl = document.getElementById("calendar");
     const calendar = new FullCalendar.Calendar(calendarEl, {
-      initialView: 'dayGridMonth',
-      timeZone: 'local',  // ✅ local time
-      height: 'auto',
+      initialView: "dayGridMonth",
+      timeZone: "local",
+      height: "auto",
       headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,listWeek'
+        left: "prev,next today",
+        center: "title",
+        right: "dayGridMonth,timeGridWeek,listWeek",
       },
-      events: {{ events|safe }},   // ✅ ONLY here once
+      events: {{ events|safe }},
+
       eventClick: function (info) {
-        if (info.event.url) {
-          window.open(info.event.url, "_blank");
-          info.jsEvent.preventDefault();
+        const { id, type } = info.event.extendedProps;
+        if (confirm(`Delete this ${type.replace('_', ' ')} event?`)) {
+          fetch(`/delete-calendar-event/${type}/${id}/`, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.success) {
+                info.event.remove();
+              } else {
+                alert("Failed to delete event.");
+              }
+            });
         }
       },
-      eventDidMount: function(info) {
+
+      eventDidMount: function (info) {
         if (info.event.extendedProps.description) {
           tippy(info.el, {
             content: info.event.extendedProps.description,
             allowHTML: true,
-            theme: 'light',
-            placement: 'top',
+            theme: "light",
+            placement: "top",
             delay: [100, 100],
           });
         }
-      }
+      },
     });
     calendar.render();
   });

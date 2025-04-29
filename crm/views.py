@@ -18,17 +18,20 @@ def lead_list(request):
     client_categories = ["Seller", "Buyer"]
     client_statuses = ["active", "closing", "lost"]
 
+    # ✅ Fetch Open Houses and Property Visits
     open_houses = OpenHouse.objects.all()
     property_visits = PropertyVisit.objects.all()
 
+    # ✅ Build events list
     events = []
 
     for event in open_houses:
         events.append(
             {
                 "title": f"🏠 Open House: {event.title}",
-                "start": localtime(event.date).isoformat(),  # ✅ Here
+                "start": localtime(event.date).isoformat(),
                 "description": f"<strong>Address:</strong> {event.address}",
+                "extendedProps": {"id": event.id, "type": "open_house"},
             }
         )
 
@@ -36,8 +39,9 @@ def lead_list(request):
         events.append(
             {
                 "title": f"📍 Visit: {visit.address}",
-                "start": localtime(visit.visit_date).isoformat(),  # ✅ Here
+                "start": localtime(visit.visit_date).isoformat(),
                 "description": f"<strong>Notes:</strong> {visit.notes or 'No notes.'}",
+                "extendedProps": {"id": visit.id, "type": "property_visit"},
             }
         )
 
@@ -420,3 +424,29 @@ def calendar_feed(request):
     response = HttpResponse(c.serialize(), content_type="text/calendar")
     response["Content-Disposition"] = "attachment; filename=calendar.ics"
     return response
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+from .models import OpenHouse, PropertyVisit
+
+
+@csrf_exempt
+def delete_calendar_event(request, event_type, event_id):
+    if request.method == "POST":
+        try:
+            if event_type == "open_house":
+                OpenHouse.objects.get(pk=event_id).delete()
+            elif event_type == "property_visit":
+                PropertyVisit.objects.get(pk=event_id).delete()
+            else:
+                return JsonResponse(
+                    {"success": False, "error": "Unknown type"}, status=400
+                )
+
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=405)
