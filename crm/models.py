@@ -1,8 +1,14 @@
+from io import BytesIO
+
+import qrcode
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
 from django.db import models
 from django.utils import timezone
+from storages.backends.s3boto3 import S3Boto3Storage
 
 
+# ✅ Lead model
 class Lead(models.Model):
     FSBO = "FSBO"
     EXPIRED = "Expired"
@@ -29,7 +35,9 @@ class Lead(models.Model):
     source = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
     last_contacted = models.DateTimeField(null=True, blank=True)
-    image = models.ImageField(upload_to="lead_images/", blank=True, null=True)
+    image = models.ImageField(
+        storage=S3Boto3Storage(), upload_to="lead_images/", blank=True, null=True
+    )  # ✅ Apply storage fix
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -37,9 +45,7 @@ class Lead(models.Model):
         return f"{self.name} – {self.lead_type}"
 
 
-from django.db import models
-
-
+# ✅ PropertyVisit model
 class PropertyVisit(models.Model):
     STATUS_CHOICES = [
         ("scheduled", "Scheduled"),
@@ -52,7 +58,9 @@ class PropertyVisit(models.Model):
     address = models.CharField(max_length=255)
     visit_date = models.DateField()
     notes = models.TextField(blank=True)
-    image = models.ImageField(upload_to="visit_images/", blank=True, null=True)
+    image = models.ImageField(
+        storage=S3Boto3Storage(), upload_to="visit_images/", blank=True, null=True
+    )  # ✅ Apply storage fix
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="scheduled"
     )
@@ -62,14 +70,7 @@ class PropertyVisit(models.Model):
         return f"{self.address} ({self.status})"
 
 
-from io import BytesIO
-
-import qrcode
-from django.contrib.auth.models import User
-from django.core.files.base import ContentFile
-from django.db import models
-
-
+# ✅ OpenHouse model
 class OpenHouse(models.Model):
     title = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
@@ -82,7 +83,9 @@ class OpenHouse(models.Model):
         null=True,
         blank=True,
     )
-    qr_code = models.ImageField(upload_to="qr_codes/", blank=True, null=True)
+    qr_code = models.ImageField(
+        storage=S3Boto3Storage(), upload_to="qr_codes/", blank=True, null=True
+    )  # ✅ Apply storage fix
 
     def __str__(self):
         return f"{self.title} – {self.date.strftime('%b %d, %Y %I:%M %p')}"
@@ -98,11 +101,12 @@ class OpenHouse(models.Model):
             qr_img.save(buffer, format="PNG")
             buffer.seek(0)
 
-            file_name = f"openhouse_{self.pk}.png"  # Don't repeat qr_codes/ here!
+            file_name = f"openhouse_{self.pk}.png"
 
             self.qr_code.save(file_name, ContentFile(buffer.read()), save=True)
 
 
+# ✅ OpenHouseSignIn model (no image fields, no change needed)
 class OpenHouseSignIn(models.Model):
     open_house = models.ForeignKey(
         OpenHouse, on_delete=models.CASCADE, related_name="sign_ins"

@@ -42,7 +42,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "crm_project.urls"
 
 # Templates
 TEMPLATES = [
@@ -62,7 +61,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "crm_project.wsgi.application"
-
+ROOT_URLCONF = "crm_project.urls"
 # Database
 DATABASES = {"default": dj_database_url.config(default=os.getenv("DATABASE_URL"))}
 
@@ -91,17 +90,13 @@ AWS_S3_REGION_NAME = os.getenv("AWS_REGION", "us-east-1")
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
 AWS_DEFAULT_ACL = None
-AWS_S3_OBJECT_PARAMETERS = {
-    "CacheControl": "max-age=86400",
-    "ACL": "public-read",
-}
-
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 AWS_QUERYSTRING_AUTH = False
 AWS_S3_FILE_OVERWRITE = False
 AWS_HEADERS = {"Access-Control-Allow-Origin": "*"}
 
 # ✅ IMPORTANT: Set this AFTER AWS config
-DEFAULT_FILE_STORAGE = "crm.storage_backends.PublicMediaStorage"
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
