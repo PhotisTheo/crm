@@ -70,9 +70,20 @@ class PropertyVisit(models.Model):
         return f"{self.address} ({self.status})"
 
 
-from django.urls import reverse  # ✅ Make sure you have this import
+# models.py
+
+from io import BytesIO
+
+import qrcode
+from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
+from django.db import models
+from django.urls import reverse
+from django.utils import timezone
+from storages.backends.s3boto3 import S3Boto3Storage
 
 
+# ✅ OpenHouse model
 class OpenHouse(models.Model):
     title = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
@@ -93,19 +104,21 @@ class OpenHouse(models.Model):
         return f"{self.title} – {self.date.strftime('%b %d, %Y %I:%M %p')}"
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # Save once to get primary key
+        super().save(*args, **kwargs)  # First save to get primary key (self.pk)
 
         if not self.qr_code:
-            # ✅ Reverse the correct public visitor sign-in URL
-            qr_relative_url = reverse("public_open_house_sign_in", args=[self.pk])
-            qr_full_url = f"https://crm.yourdomain.com{qr_relative_url}"  # 👈 Replace with your real domain!
+            # ✅ Build the correct QR URL based on your Railway domain
+            relative_url = reverse("public_open_house_sign_in", args=[self.pk])
+            full_url = f"https://crm-production-0b7b.up.railway.app{relative_url}"
 
-            qr_img = qrcode.make(qr_full_url)
+            qr_img = qrcode.make(full_url)
+
             buffer = BytesIO()
             qr_img.save(buffer, format="PNG")
             buffer.seek(0)
 
             file_name = f"openhouse_{self.pk}.png"
+
             self.qr_code.save(file_name, ContentFile(buffer.read()), save=True)
 
 
