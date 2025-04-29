@@ -82,25 +82,32 @@ TIME_ZONE = "EST"
 USE_I18N = True
 USE_TZ = True
 
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-# ✅ AWS S3 Storage Configuration
+
+# AWS S3 SETTINGS
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
-AWS_REGION_NAME = os.getenv("AWS_REGION", "us-east-1")  # Replace with your AWS region
+AWS_S3_REGION_NAME = os.getenv("AWS_REGION", "us-east-1")
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
-AWS_DEFAULT_ACL = None  # Best practice: S3 manages access
-AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
-AWS_QUERYSTRING_AUTH = False  # Removes query parameters from URLs
-AWS_S3_FILE_OVERWRITE = False  # Prevents files from being overwritten
+AWS_DEFAULT_ACL = None
+AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=86400",
+    "ACL": "public-read",
+}
+
+AWS_QUERYSTRING_AUTH = False
+AWS_S3_FILE_OVERWRITE = False
 AWS_HEADERS = {"Access-Control-Allow-Origin": "*"}
 
-# ✅ Set Storage for User Uploads to AWS S3
+# ✅ IMPORTANT: Set this AFTER AWS config
+DEFAULT_FILE_STORAGE = "crm.storage_backends.PublicMediaStorage"
 
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 
-# ✅ Static Files (Still Local with WhiteNoise)
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+
+
+# STATIC
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
