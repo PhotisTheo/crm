@@ -70,7 +70,9 @@ class PropertyVisit(models.Model):
         return f"{self.address} ({self.status})"
 
 
-# ✅ OpenHouse model
+from django.urls import reverse  # ✅ Make sure you have this import
+
+
 class OpenHouse(models.Model):
     title = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
@@ -85,24 +87,25 @@ class OpenHouse(models.Model):
     )
     qr_code = models.ImageField(
         storage=S3Boto3Storage(), upload_to="qr_codes/", blank=True, null=True
-    )  # ✅ Apply storage fix
+    )
 
     def __str__(self):
         return f"{self.title} – {self.date.strftime('%b %d, %Y %I:%M %p')}"
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # First save to get primary key (self.pk)
+        super().save(*args, **kwargs)  # Save once to get primary key
 
         if not self.qr_code:
-            qr_url = f"https://yourdomain.com/open-house-signin/{self.pk}/"  # 👈 customize your real domain
-            qr_img = qrcode.make(qr_url)
+            # ✅ Reverse the correct public visitor sign-in URL
+            qr_relative_url = reverse("public_open_house_sign_in", args=[self.pk])
+            qr_full_url = f"https://crm.yourdomain.com{qr_relative_url}"  # 👈 Replace with your real domain!
 
+            qr_img = qrcode.make(qr_full_url)
             buffer = BytesIO()
             qr_img.save(buffer, format="PNG")
             buffer.seek(0)
 
             file_name = f"openhouse_{self.pk}.png"
-
             self.qr_code.save(file_name, ContentFile(buffer.read()), save=True)
 
 
