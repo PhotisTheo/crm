@@ -181,15 +181,14 @@
     const calendarEl = document.getElementById('calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
-      timeZone: 'local',  // ✅ Force FullCalendar to use browser's local time
-      events: {{ events|safe }},
+      timeZone: 'local',  // ✅ local time
       height: 'auto',
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
         right: 'dayGridMonth,timeGridWeek,listWeek'
       },
-      events: {{ events|safe }},
+      events: {{ events|safe }},   // ✅ ONLY here once
       eventClick: function (info) {
         if (info.event.url) {
           window.open(info.event.url, "_blank");
@@ -211,6 +210,7 @@
     calendar.render();
   });
 </script>
+
 
 <style>
   .fc-event-title {
