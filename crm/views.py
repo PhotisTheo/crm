@@ -3,6 +3,7 @@ import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.timezone import localtime  # ✅ Add this
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -17,18 +18,16 @@ def lead_list(request):
     client_categories = ["Seller", "Buyer"]
     client_statuses = ["active", "closing", "lost"]
 
-    # ✅ Fetch Open Houses and Property Visits
     open_houses = OpenHouse.objects.all()
     property_visits = PropertyVisit.objects.all()
 
-    # ✅ Build events list
     events = []
 
     for event in open_houses:
         events.append(
             {
                 "title": f"🏠 Open House: {event.title}",
-                "start": event.date.strftime("%Y-%m-%dT%H:%M:%S"),
+                "start": localtime(event.date).isoformat(),  # ✅ Here
                 "description": f"<strong>Address:</strong> {event.address}",
             }
         )
@@ -37,7 +36,7 @@ def lead_list(request):
         events.append(
             {
                 "title": f"📍 Visit: {visit.address}",
-                "start": visit.visit_date.strftime("%Y-%m-%dT%H:%M:%S"),
+                "start": localtime(visit.visit_date).isoformat(),  # ✅ Here
                 "description": f"<strong>Notes:</strong> {visit.notes or 'No notes.'}",
             }
         )
@@ -51,9 +50,7 @@ def lead_list(request):
             "lead_statuses": lead_statuses,
             "client_categories": client_categories,
             "client_statuses": client_statuses,
-            "events": json.dumps(
-                events, cls=DjangoJSONEncoder
-            ),  # ✅ JSON serialized events
+            "events": json.dumps(events, cls=DjangoJSONEncoder),
         },
     )
 
