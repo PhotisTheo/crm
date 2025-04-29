@@ -53,4 +53,5 @@ urlpatterns = [
         name="public_open_house_sign_in",
     ),
     path("open-house/<int:pk>/", views.open_house_detail, name="open_house_detail"),
+    path("calendar.ics", views.calendar_feed, name="calendar_feed"),
 ]

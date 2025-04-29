@@ -1,12 +1,13 @@
 import json
 
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .forms import LeadForm, OpenHouseForm, PropertyVisitForm
-from .models import Lead, PropertyVisit
+from .models import Lead, OpenHouse, PropertyVisit  # ✅
 
 
 def lead_list(request):
@@ -15,6 +16,31 @@ def lead_list(request):
     lead_statuses = ["new", "reached_out", "contacted"]
     client_categories = ["Seller", "Buyer"]
     client_statuses = ["active", "closing", "lost"]
+
+    # ✅ Fetch Open Houses and Property Visits
+    open_houses = OpenHouse.objects.all()
+    property_visits = PropertyVisit.objects.all()
+
+    # ✅ Build events list
+    events = []
+
+    for event in open_houses:
+        events.append(
+            {
+                "title": f"🏠 Open House: {event.title}",
+                "start": event.date.strftime("%Y-%m-%dT%H:%M:%S"),
+                "description": f"<strong>Address:</strong> {event.address}",
+            }
+        )
+
+    for visit in property_visits:
+        events.append(
+            {
+                "title": f"📍 Visit: {visit.address}",
+                "start": visit.visit_date.strftime("%Y-%m-%dT%H:%M:%S"),
+                "description": f"<strong>Notes:</strong> {visit.notes or 'No notes.'}",
+            }
+        )
 
     return render(
         request,
@@ -25,6 +51,9 @@ def lead_list(request):
             "lead_statuses": lead_statuses,
             "client_categories": client_categories,
             "client_statuses": client_statuses,
+            "events": json.dumps(
+                events, cls=DjangoJSONEncoder
+            ),  # ✅ JSON serialized events
         },
     )
 
@@ -361,3 +390,36 @@ from .models import OpenHouse
 def open_house_detail(request, pk):
     open_house = get_object_or_404(OpenHouse, pk=pk)
     return render(request, "crm/open_house_detail.html", {"open_house": open_house})
+
+
+from django.http import HttpResponse
+from ics import Calendar, Event
+
+from .models import OpenHouse, PropertyVisit
+
+
+def calendar_feed(request):
+    c = Calendar()
+
+    open_houses = OpenHouse.objects.all()
+    property_visits = PropertyVisit.objects.all()
+
+    for house in open_houses:
+        e = Event()
+        e.name = f"Open House: {house.title}"
+        e.begin = house.date
+        e.duration = {"hours": 1}
+        e.location = house.address
+        c.events.add(e)
+
+    for visit in property_visits:
+        e = Event()
+        e.name = f"Property Visit: {visit.address}"
+        e.begin = visit.visit_date
+        e.duration = {"hours": 1}
+        e.description = visit.notes or "No notes."
+        c.events.add(e)
+
+    response = HttpResponse(c.serialize(), content_type="text/calendar")
+    response["Content-Disposition"] = "attachment; filename=calendar.ics"
+    return response
